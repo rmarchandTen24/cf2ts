@@ -48,27 +48,27 @@ public class cf2ts extends CFTransmissionBaseListener {
 	@Override
 	public void enterComponent(CFTransmissionParser.ComponentContext componentCtx){
 		//writeDump("\n/**\n");//Start the comment
-		String openingCommentToken = "\n/**\n";
-		rewriter.insertBefore(componentCtx.getStart(), openingCommentToken);
-		rewriter.delete(componentCtx.getStart());
-		List<CFTransmissionParser.KeyValueContext> keyValueList = componentCtx.keyValue();
-		int i = 0; //index
-		for (CFTransmissionParser.KeyValueContext keyVal : keyValueList){
-			int listSize = keyValueList.size();
-			
-			if (keyVal.getText().toLowerCase().contains("displayname=")){
-				componentName = keyVal.getText().replace(" ", "").split("\"")[1];
-				rewriter.delete(keyVal.getStart(), keyVal.getStop());
-				continue;
-			}
-			//writeDump("*@" + keyVal.getText().replace("=", " ") + "\n");
-			rewriter.replace(keyVal.getStart(), keyVal.getStop(), "*@" + keyVal.getText().replace(" ", "").replace("=", " ") + "\n");
-			if (i + 2 == listSize){
-				//writeDump("*/\ncomponent displayName = " + "\"" + componentName + "\" {\n");
-				rewriter.replace(keyVal.getStart(), keyVal.getStop(),"*/\ncomponent displayName = " + "\"" + componentName + "\""); 
-			}
-			i++;
-		}
+//		String openingCommentToken = "\n/**\n";
+//		rewriter.insertBefore(componentCtx.getStart(), openingCommentToken);
+//		rewriter.delete(componentCtx.getStart());
+//		List<CFTransmissionParser.KeyValueContext> keyValueList = componentCtx.keyValue();
+//		int i = 0; //index
+//		for (CFTransmissionParser.KeyValueContext keyVal : keyValueList){
+//			int listSize = keyValueList.size();
+//			
+//			if (keyVal.getText().toLowerCase().contains("displayname=")){
+//				componentName = keyVal.getText().replace(" ", "").split("\"")[1];
+//				rewriter.delete(keyVal.getStart(), keyVal.getStop());
+//				continue;
+//			}
+//			//writeDump("*@" + keyVal.getText().replace("=", " ") + "\n");
+//			rewriter.replace(keyVal.getStart(), keyVal.getStop(), "*@" + keyVal.getText().replace(" ", "").replace("=", " ") + "\n");
+//			if (i + 2 == listSize){
+//				//writeDump("*/\ncomponent displayName = " + "\"" + componentName + "\" {\n");
+//				rewriter.replace(keyVal.getStart(), keyVal.getStop(),"*/\ncomponent displayName = " + "\"" + componentName + "\""); 
+//			}
+//			i++;
+//		}
 		
 	}
 	
@@ -77,9 +77,9 @@ public class cf2ts extends CFTransmissionBaseListener {
 	 */
 	@Override
 	public void exitComponent(CFTransmissionParser.ComponentContext componentCtx){
-		rewriter.replace(componentCtx.getStop(), "\n}//<--end component\n");
-		//writeDump("\n}//<--end component\n");
-		writeDump(rewriter.getText());
+//		rewriter.replace(componentCtx.getStop(), "\n}//<--end component\n");
+//		//writeDump("\n}//<--end component\n");
+//		writeDump(rewriter.getText());
 	}
 	
 	/**
