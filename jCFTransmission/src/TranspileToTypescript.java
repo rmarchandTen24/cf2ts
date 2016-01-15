@@ -99,8 +99,8 @@ public class TranspileToTypescript extends CFTransmissionBaseListener {
 		for (CFTransmissionParser.KeyValueContext keyVal : keyValueList) {
 			int listSize = keyValueList.size();
 
-			if (keyVal.getText().toLowerCase().contains("displayname=")) {
-				componentName = keyVal.getText().replace(" ", "").split("\"")[1];
+			if (keyVal.getText().toLowerCase().contains("entityname=")) {
+				componentName = keyVal.getText().replace("Slatwall", "").split("\"")[1];
 			}
 
 			rewriter.replace(keyVal.getStart(), keyVal.getStop(), "\t*@"
@@ -111,7 +111,7 @@ public class TranspileToTypescript extends CFTransmissionBaseListener {
 
 				// insert the class
 				rewriter.insertAfter(keyVal.getStop(),
-						indent + "export class " + componentName); // +
+						indent + "export class " + componentName + " extends baseentity"); // +
 																		// " extends "+
 																		// baseClass
 																		// +"\n");
@@ -178,11 +178,10 @@ public class TranspileToTypescript extends CFTransmissionBaseListener {
 		// clean generated Typescript
 		generatedTypescript = generatedTypescript.replaceAll(
 				"(?m)^[ \t]*\r?\n", "");
-
 		// THIS WRITES IT TO FILE
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter(tsFileName, "UTF-8");
+			writer = new PrintWriter(tsFileName.toLowerCase(), "UTF-8");
 			writer.write(generatedTypescript);
 			writer.close();
 		} catch (FileNotFoundException e) {
@@ -212,9 +211,10 @@ public class TranspileToTypescript extends CFTransmissionBaseListener {
 				.keyValue();
 		
 		for (CFTransmissionParser.KeyValueContext keyVal : keyValueList) {
-
+			
 			if (keyVal.getText().replace(" ", "").toLowerCase()
 					.contains("name=")) {
+				
 				propertyName = keyVal.getText().replace(" ", "").split("\"")[1];
 
 			}
@@ -260,83 +260,85 @@ public class TranspileToTypescript extends CFTransmissionBaseListener {
 	public void exitPropertyDeclaration(CFTransmissionParser.PropertyDeclarationContext propertyCtx) {
 		String indent = this.getCodeIndent(12);
 		
-		rewriter.replace(propertyCtx.getStop(), indent + "*/\n");
-
-		if (propertyType.toLowerCase().equals("string")) {
-			rewriter.insertAfter(propertyCtx.getStop(), ((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + "            private " + propertyName + ": " + "string" + ";\n");
-			addGetterSetter(propertyName, "string", propertyObject);
-		} else if (propertyType.toLowerCase().equals("timestamp")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "string" + ";\n");
-			 addGetterSetter(propertyName, "string", propertyObject);
-		} else if (propertyType.toLowerCase().equals("boolean")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "boolean" + ";\n");
-			 addGetterSetter(propertyName, "boolean", propertyObject);
-		} else if (propertyType.toLowerCase().equals("numeric")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "number" + ";\n");
-			 addGetterSetter(propertyName, "number", propertyObject);
-		} else if (propertyType.toLowerCase().equals("currency")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "number" + ";\n");
-			 addGetterSetter(propertyName, "number", propertyObject);
-		} else if (propertyType.toLowerCase().equals("big_decimal")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "number" + ";\n");
-			 addGetterSetter(propertyName, "number", propertyObject);
-		}
-		// Handle basic type
-		else if (propertyType.toLowerCase().equals("integer")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "number" + ";\n");
-			 addGetterSetter(propertyName, "number", propertyObject);
-		} else if (propertyType.toLowerCase().equals("any")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "any" + ";\n");
-			 addGetterSetter(propertyName, "any", propertyObject);
-		} else if (propertyType.toLowerCase().equals("struct")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "any" + ";\n");
-			 addGetterSetter(propertyName, "any", propertyObject);
-		} else if (propertyType.toLowerCase().equals("array")
-				&& propertyObject.equals("")) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "any[]" + ";\n");
-			 addGetterSetter(propertyName, "any[]", propertyObject);
-		} else if (isMany2Many) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "any[];\n");// propertyObject
-																// +"[];\n");
-			 addGetterSetter(propertyName, "any[]", propertyObject);
-
-		} else if (isMany2One) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "any;\n");// propertyObject
-																// +";\n");
-			 addGetterSetter(propertyName, "any", propertyObject);
-		} else if (isOne2Many) {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + "s" + ": " + "any[];\n");// propertyObject
-																		// +"[];\n");
-			 addGetterSetter(propertyName + "s", "any[]", propertyObject);
-		} else {
-			rewriter.insertAfter(propertyCtx.getStop(),
-					((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
-							+ propertyName + ": " + "any" + ";\n");
-			 addGetterSetter(propertyName, "any", propertyObject);
+		if(propertyName.length() > 0){
+			rewriter.replace(propertyCtx.getStop(), indent + "*/\n");
+			
+			if (propertyType.toLowerCase().equals("string")) {
+				rewriter.insertAfter(propertyCtx.getStop(), ((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + "            private " + propertyName + ": " + "string" + ";\n");
+				addGetterSetter(propertyName, "string", propertyObject);
+			} else if (propertyType.toLowerCase().equals("timestamp")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "string" + ";\n");
+				 addGetterSetter(propertyName, "string", propertyObject);
+			} else if (propertyType.toLowerCase().equals("boolean")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "boolean" + ";\n");
+				 addGetterSetter(propertyName, "boolean", propertyObject);
+			} else if (propertyType.toLowerCase().equals("numeric")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "number" + ";\n");
+				 addGetterSetter(propertyName, "number", propertyObject);
+			} else if (propertyType.toLowerCase().equals("currency")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "number" + ";\n");
+				 addGetterSetter(propertyName, "number", propertyObject);
+			} else if (propertyType.toLowerCase().equals("big_decimal")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "number" + ";\n");
+				 addGetterSetter(propertyName, "number", propertyObject);
+			}
+			// Handle basic type
+			else if (propertyType.toLowerCase().equals("integer")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "number" + ";\n");
+				 addGetterSetter(propertyName, "number", propertyObject);
+			} else if (propertyType.toLowerCase().equals("any")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "any" + ";\n");
+				 addGetterSetter(propertyName, "any", propertyObject);
+			} else if (propertyType.toLowerCase().equals("struct")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "any" + ";\n");
+				 addGetterSetter(propertyName, "any", propertyObject);
+			} else if (propertyType.toLowerCase().equals("array")
+					&& propertyObject.equals("")) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "any[]" + ";\n");
+				 addGetterSetter(propertyName, "any[]", propertyObject);
+			} else if (isMany2Many) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "any[];\n");// propertyObject
+																	// +"[];\n");
+				 addGetterSetter(propertyName, "any[]", propertyObject);
+	
+			} else if (isMany2One) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "any;\n");// propertyObject
+																	// +";\n");
+				 addGetterSetter(propertyName, "any", propertyObject);
+			} else if (isOne2Many) {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + "s" + ": " + "any[];\n");// propertyObject
+																			// +"[];\n");
+				 addGetterSetter(propertyName + "s", "any[]", propertyObject);
+			} else {
+				rewriter.insertAfter(propertyCtx.getStop(),
+						((this.generateGetterAndSetterDecorator) ? this.GETSET_DECORATOR : "") + indent + "private "
+								+ propertyName + ": " + "any" + ";\n");
+				 addGetterSetter(propertyName, "any", propertyObject);
+			}
 		}
 	}
 
@@ -349,11 +351,14 @@ public class TranspileToTypescript extends CFTransmissionBaseListener {
 	}
 
 	public void addGetterSetter(String propertyName, String propertyType, String propertyObject) {
-		gettersandsetters.put(propertyName, "\t\t\tget" + cap(propertyName) + "():"
-				+ propertyType + " { return this." + propertyName
-				+ "; }\n\t\t\tset" + cap(propertyName) + "(" + propertyName + ":"
-				+ propertyType + ") {this." + propertyName + " = "
-				+ propertyName + ";}");
+		
+		//if(propertyName != null && propertyName.length() > 0){
+			gettersandsetters.put(propertyName, "\t\t\tget" + cap(propertyName) + "():"
+					+ propertyType + " { return this." + propertyName
+					+ "; }\n\t\t\tset" + cap(propertyName) + "(" + propertyName + ":"
+					+ propertyType + ") {this." + propertyName + " = "
+					+ propertyName + ";}");
+		//}
 	}
 
 	/**
